@@ -1,0 +1,7 @@
+Otto is a repository manager
+
+* What is Otto's job?
+
+
+
+* Configuration 
