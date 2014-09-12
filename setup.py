@@ -5,6 +5,7 @@ setup(
     packages = find_packages(),
     install_requires = [
         'Click',
+        'networkx',
     ],
     entry_points='''
     [console_scripts]
