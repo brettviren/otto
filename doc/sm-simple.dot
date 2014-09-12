@@ -1,0 +1,25 @@
+digraph OnePackage {
+	node [shape=oval];
+	
+
+	start->cloned [label = "git clone"];
+	cloned->start [label = "rm -rf workingdir"];
+	cloned->commits_pending [ label="git flow feature start\nbumpversion feature\ngit commit"];
+	commits_pending->repo_synced [label = "git push"];
+	commits_pending->pydevelop[label = "skip push"];
+	
+
+	repo_synced->pydevelop [label="noop"];
+	pydevelop->pyinstalled [label="python setup.py sdist\npip install dist/package.tar.gz"];
+	pyinstalled->pytested [label="run tests"];
+	pytested->pyfailed[label="tests failed"];
+	
+	pyfailed->pyuninstalled[label="pip uninstall -y package"];
+	pyuninstalled->pydirty[label="make fixes"];
+	pydirty->pydevelop[label="skip commit"];
+	
+	pytested->pyokay[label="tests okay"];
+	pyokay->commits_pending[label="git commit"];
+	pyokay->pydevelop[label="HACK MOAR"];	
+	
+	}

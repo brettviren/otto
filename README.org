@@ -1,7 +1,65 @@
 Otto is a repository manager
 
-* What is Otto's job?
+* Questions:
+
+#+BEGIN_QUOTE
+Good evening, Otto. This is Agent Rogersz. I'm going to ask you a few questions. Since time is short and you may lie, I'm going to have to torture you. But I want you to know, it isn't personal. 
+#+END_QUOTE
+
+** What does Otto do?
+
+Otto assists in performing tasks related to a software repository.  It comes with a number of common tasks which include things like:
+
+ - cloning a repository and checking out a branch
+ - building, testing, installing the software, 
+ - making releases
+ - creating and publishing packages
+ - initiating and finalizing development efforts
+
+Otto allows users to define their own tasks which may extend the applicability to suites of repositories or even processes not associated with software repositories.
+
+** How does Otto work?
+
+At the heart of Otto is a workflow of tasks that allow transitions between states.  The workflow is represented as a cyclical directed graph with states as nodes and tasks as edges.  The tasks are executed and the state is held by a state machine.  User interaction is needed to direct the state machine to attempt to enter a new state by executing the task that takes it there.  The transition will occur if the target state is directly connected to the current state and if the task succeeds.  In this manner the user need only know where they want to go and not the details of how to get there.
+
+** What are these states?
+
+An Otto state is somewhat abstract.  Specifically, it is merely a label stored in an Otto database.  The states are conceptually mapped to states of "the software".  This concrete state may be a particular layout of files on disk, a particular branch checked out, a particular version installed, a particular package build and published, etc.  
+
+** What are these tasks?
+
+A task is a Python function that has been associated to the edge joining the current and target states.  Often this function merely executes an external subprocess.  
+
+** What about failures?
+
+Just before task execution, Otto leaves its current state.  If the task is successful it enters the target state.  If the task fails, Otto enters a special error state and requires the user to explicitly reset the state machine.  Before doing this the user may have to clean up the actual state of the software manually in order to allow the Otto state to be properly in sync with reality.  This is why users still must have brains.
+
+#+BEGIN_QUOTE
+You don't even know what's in your own trunk! And you know what? I think you're afraid to find out! 
+#+END_QUOTE
 
 
+* Blah
+
+
+** Repositories
+
+An Otto repository consists of:
+
+ - name
+ - url
+ - command set
+
+** Projects
+
+An Otto project consists of:
+
+ - name
+ - file system path
+ - command set
+
+** Commands and command sets
+
+** Dependencies
 
 * Configuration 

@@ -1,0 +1,14 @@
+digraph GitFlowBump {
+	empty->master[label="git clone URL REPO"];
+	master->develop[label="git checkout -b develop master"];
+	develop->develop[label="hack\ngit commit"];
+
+	develop->feature[label="git flow feature start\nbumpversion feature\ngit commit"];
+	feature->feature[label="hack\ngit commit"];
+	feature->develop[label="git flow feature finish\nbumpversion develop\ngit commit"];
+
+	develop->release[label="git flow release start\nbumpversion release\ngit commit"];
+	release->release[label="hack\ngit commit"];
+	release->develop[label="git flow release finish\nbumpversion develop\ngit commit"];
+	
+	}

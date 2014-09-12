@@ -1,0 +1,70 @@
+digraph OnePackage {
+	node [shape=oval];
+	
+	start;
+	cloned;
+
+	release_branch_created;
+	release_version_bumped;
+	release_distfile_created;
+	release_installed;
+	release_uninstalled;
+	release_tested;
+	release_src_clean;
+	release_src_dirty;
+	release_branch_pushed;
+	release_branch_finished;
+	release_tagged;
+	release_published;
+
+	feature_branch_created;
+	feature_version_bumped;
+	feature_distfile_created;
+	feature_installed;
+	feature_uninstalled;
+	feature_tested;
+	feature_src_dirty;
+	feature_src_clean;
+	feature_branch_pushed;
+	feature_branch_finished;
+	
+
+	start->cloned [label = "git clone"];
+	cloned->start [label = "rm -rf workingdir"];
+	
+	cloned->release_branch_created [ label = "git flow release start"];
+	release_branch_created -> release_version_bumped [ label = "bumpversion <level>"];
+	release_version_bumped -> release_src_clean [ label="git commit -m \"version bump\""];
+	release_src_clean->release_distfile_created [ label="python setup.py sdist"];
+	release_distfile_created -> release_installed [ label = "pip install dist/package-X.Y.Z.tar.gz"];
+	release_installed->release_tested [ label = "run tests" ];
+	release_tested->release_branch_finished [ label = "tests succeed" ];
+	release_branch_finished -> release_tagged [ label = "git tag -a X.Y.Z -m \"Version X.Y.Z\""];
+	release_tagged -> release_published [ label = "python setup.py sdist upload" ] ;
+	release_published -> release_src_clean [ label = "git push --tags"];
+	
+	release_tested->release_uninstalled [ label = "tests fail" ] ;
+	release_uninstalled->release_src_dirty [label = "make fixes" ] ;
+	release_src_dirty->release_src_clean [label = "commit fixes"];
+
+	release_src_clean -> release_branch_pushed [label = "git push origin release/X.Y.Z"];
+	release_branch_pushed->release_src_clean [label = "noop"];
+
+	cloned->feature_branch_created [ label = "git flow feature start"];
+	feature_branch_created -> feature_version_bumped [ label = "bumpversion feature"];
+	feature_version_bumped -> feature_src_clean [ label="git commit -m \"version bump\""];
+	feature_src_clean->feature_distfile_created [ label="python setup.py sdist"];
+	feature_distfile_created -> feature_installed [ label = "pip install dist/package-X.Y.Zfeat1.tar.gz"];
+	feature_installed->feature_tested [ label = "run tests" ];
+	feature_tested->feature_branch_finished [ label = "tests succeed" ];
+	feature_branch_finished->feature_src_clean [label="git flow feature finish"];
+
+	feature_tested->feature_uninstalled [ label = "tests fail" ] ;
+	feature_uninstalled->feature_src_dirty [label = "make fixes" ] ;
+	feature_src_dirty->feature_src_clean [label = "commit fixes"];
+
+
+	feature_src_clean -> feature_branch_pushed [label = "git push origin feature/NAME"];
+	feature_branch_pushed->feature_src_clean [label = "noop"];
+	
+	}

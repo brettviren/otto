@@ -71,19 +71,7 @@ def test_failure():
     else:
         raise RuntimeError, 'We should have got a RuntimeError'
 
-def test_smart_state():
-    class SmartStateStore(object):
-        def __init__(self, value = None):
-            self._state = value
-
-        @property
-        def state(self):
-            return self._state
-
-        @state.setter
-        def state(self, value):
-            self._state = value
-        
+def test_inherited_state():
     g = nx.Graph()
     g.add_edge(1, 2, transition=move, before=before, after=after)
     g.add_edge(1, 3, transition=move, before=before, after=after)
@@ -92,19 +80,53 @@ def test_smart_state():
     g.add_edge(3, 4, transition=move, before=before, after=after)
     g.add_node(1, a=10,b=20)
 
-    ss = SmartStateStore(42)
-    sm = otto.state.StateMachine(g, store = ss)
+
+    class MySM(otto.state.StateMachine):
+        def __init__(self, *args, **kwds):
+            self.mymsg = kwds.pop('mymsg', "Jump")
+            super(MySM, self).__init__(*args, **kwds)
+
+        def jump(self, state):
+            print ('%s from "%s" to "%s"' % (self.mymsg, self._state, state))
+            self._state = state
+    
+    sm = MySM(g, mymsg="Transition")
 
     sm.state = 1
-    print 'state:', sm.state, ss.state
-    assert sm.state is ss.state
+    print 'state:', sm.state
+    assert sm.state
 
     sm.goto(2)
-    print 'state:', sm.state, ss.state
-    assert sm.state is ss.state
+    print 'state:', sm.state
+    assert sm.state
 
     sm.goto(3)
-    print 'state:', sm.state, ss.state
-    assert sm.state is ss.state
+    print 'state:', sm.state
+    assert sm.state
 
+
+def test_persistent_state():
+    g = nx.Graph()
+    g.add_edge(1, 2, transition=move, before=before, after=after)
+    g.add_edge(1, 3, transition=move, before=before, after=after)
+    g.add_edge(2, 3, transition=move, before=before, after=after)
+    g.add_edge(2, 4, transition=move, before=before, after=after)
+    g.add_edge(3, 4, transition=move, before=before, after=after)
+    g.add_node(1, a=10,b=20)
+
+    import tempfile
+    tmpdir = tempfile.mkdtemp(prefix='otto-test-')
+    fname = os.path.join(tmpdir, 'otto-state')
+    print 'Using tempfile: %s' % fname
+
+    psm1 = otto.state.PersistentStateMachine(fname, g)
+    psm1.state = 1
+    del(psm1)
+    psm2 = otto.state.PersistentStateMachine(fname)
+    assert psm2.state == 1
+    psm2.jump(2)
+    assert psm2.state == 2
+
+    import shutil
+    shutil.rmtree(tmpdir)
 

@@ -10,5 +10,6 @@ setup(
     entry_points='''
     [console_scripts]
     otto=otto.cli:main
+    otto-flow=otto.sandbox:main
     ''',
 )

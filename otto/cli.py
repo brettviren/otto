@@ -3,55 +3,70 @@
 import os
 import sys
 import click
-import otto.config
+from subprocess import check_call
+from collections import namedtuple
+
+RepoData = namedtuple('RepoData', 'name url')
+ProjData = namedtuple('ProjData', 'name path repos')
+
+def cfg2dat(filename):
+    filename = os.path.expanduser(os.path.expandvars(filename))
+
+    from ConfigParser import SafeConfigParser
+    cfg = SafeConfigParser()
+    cfg.read(filename)
+
+    repos = dict()
+    projs = dict()
+
+    for secname in cfg.sections():
+        sectype, name = secname.split(' ',1)
+        if sectype == 'repo':
+            repos[name] = RepoData(name, cfg.get(secname, 'url'))
+        if sectype == 'project':
+            projs[name] = ProjData(name, os.path.expanduser(os.path.expandvars(cfg.get(secname, 'path'))),
+                                   cfg.get(secname, 'repos'))
+    return repos, projs
+        
+
 
 @click.group()
 @click.option('-c', '--config', default='~/.otto/config',
               help = 'Set configuration file.')
 @click.pass_context
 def cli(ctx, config):
-    cfg = otto.config.load(config)
-    ctx.obj['config'] = cfg
-    ctx.obj['config_filename'] = config
+    ctx.obj['repo'], ctx.obj['proj'] = cfg2dat(config)
     return
+
 
 @cli.command()
-@click.argument('name', default="")
-@click.option('-p','--path', default=os.getcwd(),
-              help = 'Path to repository area (def=cwd)')
-@click.option('-k','--keywords', 
-              help = 'Any extra key/value pairs like key1=val1;key2=val2')
-@click.option('-k','--keywords', 
-              help = 'Any extra key/value pairs like key1=val1;key2=val2')
-@click.option('--force', is_flag=True,
-              help = 'Force a registration even if it exists')
+@click.option('-s','--subdir', default='venv', help='Sub-directory in project to hold virtual environment')
+@click.argument('project')
 @click.pass_context
-def register(ctx, name, path, keywords, force):
-    assert os.path.exists('.git')
-    if not name:
-        name = os.path.basename(os.getcwd())
-
-    kwds = dict()
-    if keywords:
-        for kv in keywords.split(';'):
-            k,v = kv.split('=')
-            kwds[k] = v
-
-    cfg = ctx.obj['config']
-    repokey = 'repo ' + name
-    if cfg.has_key(repokey):
-        if force:
-            cfg.pop(repokey)
-        else:
-            click.echo('Repository "%s" already registered' % name)
-            sys.exit(1)
-
-    sec = otto.config.register(cfg, name, path, **kwds)
-    if not sec:
-        click.echo('Failed to register "%s"' % name)
+def venvinit(ctx, subdir, project):
+    p = ctx.obj['proj'][project]
+    click.echo("Initializing virtualenv in %s" % p.path)
+    if not os.path.exists(p.path):
+        os.makedirs(p.path)
+    vpath = os.path.join(p.path, subdir)
+    if os.path.exists(vpath):
+        click.echo('Project "%s" already has virtual environment at %s' % (project, vpath))
         sys.exit(1)
-    otto.config.dump(cfg, ctx.obj['config_filename'])
-    return
+    check_call("virtualenv %s" % subdir, cwd=p.path, shell=True)
+    apath = os.path.join(vpath,'bin/activate')
+    if os.path.exists(vpath):
+        click.echo('Initialized virtualenv in %s' % vpath)
+        return
+    click.echo('Failed to create virtualenv at %s' % vpath)
+    sys.exit(1)
+
+
+@cli.command()
+@click.argument('project')
+@click.pass_context
+def clone(ctx, project):
+    
+
 
 def main():
     cli(obj=dict())
