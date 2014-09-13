@@ -16,16 +16,23 @@ def cli(ctx, store):
     ctx.obj['machine'] = sm
     pass
 
+
+def kev2dict(setting):
+    d = dict()
+    for s in setting:
+        k,v = s.split('=')
+        d[k] = v
+    return d
+
 @cli.command()
-@click.argument("setting")
+@click.argument("setting", nargs=-1)
 @click.pass_context
 def set(ctx, setting):
-    k,v = setting.split('=')
+    'Set database parameters.'
     sm = ctx.obj['machine']
     p = dict(sm.params)
-    p[k] = v
+    p.update(kev2dict(setting))
     sm.params = p
-    print sm.params
     sm.sync()
 
 @cli.command()
@@ -38,10 +45,11 @@ def status(ctx):
 
 @cli.command()
 @click.argument('state')
+@click.argument("setting", nargs=-1)
 @click.pass_context
-def goto(ctx, state):
+def goto(ctx, state, setting):
     sm = ctx.obj['machine']
-    sm.goto(state)
+    sm.goto(state, **kev2dict(setting))
 
 @cli.command()
 @click.argument('state', default = '')
@@ -50,6 +58,12 @@ def jump(ctx, state):
     sm = ctx.obj['machine']
     sm.jump(state or None)
 
+@cli.command()
+@click.argument('arg', nargs=-1)
+@click.pass_context
+def dummy(ctx, arg):
+    click.echo(str(arg))
+    pass
 
 def main():
     cli(obj=dict())

@@ -11,5 +11,6 @@ setup(
     [console_scripts]
     otto=otto.cli:main
     otto-flow=otto.sandbox:main
+    otto-repo=otto.repos:main
     ''',
 )
