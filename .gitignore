@@ -6,3 +6,6 @@ dist
 *.out
 *.pdf
 ottovenv
+junk
+tmp
+venv*

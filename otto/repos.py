@@ -163,10 +163,10 @@ def status(ctx, repo, format):
     with RepoConfg(ctx.obj['config']) as rc:
         repos = rc.repos
         if repo: repos = [repo]
-        for name in repos:
+        for name in sorted(repos):
             path = rc[name].path
             desc = git.describe(path=path)
-            summary = 'mod:{modified} new:{untracked}'.format(**git.file_summary(path))
+            summary = 'mod:{modified} new:{added} unk:{untracked}'.format(**git.file_summary(path))
             string = format.format(**locals())
 
             click.echo(string)

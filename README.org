@@ -39,27 +39,24 @@ You don't even know what's in your own trunk! And you know what? I think you're 
 #+END_QUOTE
 
 
-* Blah
+* Otto parts
 
+Otto functionality is partitioned into:
+
+ - repos :: information and operations on individual repositories 
+ - workflows :: defining operations and executing them constrained by a workflow
 
 ** Repositories
 
-An Otto repository consists of:
+Run:
+#+BEGIN_EXAMPLE
+  $ otto-repo
+#+END_EXAMPLE
 
- - name
- - url
- - command set
+** Workflows
 
-** Projects
+Run:
+#+BEGIN_EXAMPLE
+  $ otto-workflow
+#+END_EXAMPLE
 
-An Otto project consists of:
-
- - name
- - file system path
- - command set
-
-** Commands and command sets
-
-** Dependencies
-
-* Configuration 

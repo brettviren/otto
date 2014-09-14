@@ -92,6 +92,7 @@ class StateMachine(object):
         print 'EDGES:', self.workflow.edge
 
         params = dict(self.workflow.node[old_state])
+        params.update(edge.get('params',dict()))
         params.update(self.params)
         params.update(kwds)
 
